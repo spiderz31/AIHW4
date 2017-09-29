@@ -52,7 +52,7 @@ public class Main {
 				winnerChar = s.getWinner();
 			}
 		}
-		if (winnerChar == ' ') {
+		if (winnerChar == 'D') {
 			System.out.println("DRAW");
 		}
 		else {

@@ -262,6 +262,9 @@ public class State {
 	}
 
 	public char getWinner() {
+		if (getBlanks().isEmpty()) {
+			return 'D'; // draw
+		}
 		ArrayList<OpenRow> openRows = getOpenrows();
 		for (OpenRow or: openRows) {
 			if (or.getType() == 4) {
