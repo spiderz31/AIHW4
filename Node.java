@@ -3,7 +3,8 @@ public class Node {
 	
 	private State state;
 	private Node parent;
-	private int heuristic;
+	//private int heuristic;
+	private int uVal = 0;
 	
 	public Node(State state, Node parent) {
 		this.state = state;
@@ -22,7 +23,15 @@ public class Node {
 		return state;
 	}
 	
+	public void setU(int u) {
+		this.uVal = u;
+	}
 	
+	public int getU() {
+		return this.uVal;
+	}
+	
+	/*
 	public void setHeuristic(int h) {
 		this.heuristic = h;
 	}
@@ -31,5 +40,6 @@ public class Node {
 	public int getHeuristic() {
 		return heuristic;
 	}
+	*/
 
 }

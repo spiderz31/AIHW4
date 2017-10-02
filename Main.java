@@ -86,35 +86,58 @@ public class Main {
 	// i.e. behave in the same manner as beginner when open-3-in-a-row
 	private static int[] mDecision(Node node, int depth) {
 		// return the a in Actions(state) maximizing Min-Value(Result(a,state))
-		//HashMap<Node, Integer> lookup = new HashMap<>();
 		int best = Integer.MIN_VALUE;
+		ArrayList<int[]> moves = new ArrayList<>();
 		int[] move = {0,0};
 		int temp = best;
 		ArrayList<Node> successors = expand(node, 'X');
 		for (Node successor : successors) {
 			best = Math.max(best, mMin(successor, depth-1));
-			if (temp < best) {
+			if (temp <= best) {
+				if (temp < best) {
+					moves.clear();
+				}
 				move = successor.getState().getLastMove();
-				//successor.getState().print();
+				moves.add(move);
 			}
-			//lookup.put(successor, best);
 			temp = best;
-			// No matter what side the open 4-in-a-row is on, take it
+			
+			// 
 			ArrayList<OpenRow> openRows = successor.getState().getOpenrows();
 			for (OpenRow or: openRows) {
 				if (or.getType() == 3) {
 					return or.getBlankPosition();
 				}
+				// If the successor node has a 4 in a row, return the move that makes it 4 in a row
+				
+				
+				
+				// This check should be included in terminal test
+				if (or.getType() == 4) return successor.getState().getLastMove();
+			}
+			
+		}
+		
+		// Check if there is an open 4-in-a-row for O
+		ArrayList<Node> oList = expand(node, 'O');
+		for (Node oNode : oList) {
+			ArrayList<OpenRow> oRows = oNode.getState().getOpenrows();
+			for (OpenRow or : oRows) {
+				if (or.getType() == 4) return oNode.getState().getLastMove();
 			}
 		}
-		return move;
+		Random r = new Random();
+		return moves.get(r.nextInt(moves.size()));
 	}
 	
 	// Maximizing is X
 	// Returns the integer value of the max heuristic child
 	private static int mMax(Node node, int depth) {
 		int check = terminalTest(node, depth, 1);
-		if (check == 0) return node.getState().getHVal();
+		if (check == 0) {
+			return node.getU();	// Get utility value: prioritized over heuristic
+		}
+		
 		if (depth == 0) return node.getState().getHeuristic('X');
 		int val = Integer.MIN_VALUE;
 		
@@ -127,10 +150,12 @@ public class Main {
 	}
 	
 	// Minimizing is O
-	// Returns the integer alue of the min heuristic child
+	// Returns the integer value of the min heuristic child
 	private static int mMin(Node node, int depth) {
 		int check = terminalTest(node, depth, 2);
-		if (check == 0) return node.getState().getHVal();
+		if (check == 0) {
+			return node.getU();	// U is the utility value: prioritized over heuristic
+		}
 		if (depth == 0) return node.getState().getHeuristic('O');
 		int val = Integer.MAX_VALUE;
 		
@@ -152,21 +177,27 @@ public class Main {
 			check = 0;
 			if (mode == 2) {
 				// Called from mMin - play from 'O', so assign a LOW heuristic value
-				node.getState().setHVal(Integer.MIN_VALUE);
+				//node.getState().setHVal(Integer.MIN_VALUE);
+				System.out.println("terminal test for X passed from min");
+				node.setU(Integer.MIN_VALUE);
 			}
 			if (mode == 1) {
-				node.getState().setHVal(Integer.MAX_VALUE);
+				node.setU(Integer.MAX_VALUE);
+				//node.getState().setHVal(Integer.MAX_VALUE);
 			}
 		} else if (node.getState().terminalCheck('O') == 1) {
 			// -Victory incoming for O-
 			check = 0;
 			if (mode == 2) {
-				node.getState().setHVal(Integer.MIN_VALUE);
+				System.out.println("terminal test for O passed from min");
+				node.setU(Integer.MIN_VALUE);
+				//node.getState().setHVal(Integer.MIN_VALUE);
 			}
 			if (mode == 1) {
-				node.getState().setHVal(Integer.MAX_VALUE);
+				node.setU(Integer.MAX_VALUE);
+				//node.getState().setHVal(Integer.MAX_VALUE);
 			}
-		}
+		} else check = 1;
 		
 		return check;
 	}

@@ -12,7 +12,8 @@ public class State {
 	private static final int SAME = 1;
 	private static final int DIFFERENT = 2;
 	
-	private int hVal;
+	// For utility: if terminal node
+	private int hVal = 0;
 	
 	public State() {
 		board = new char[height][width];
