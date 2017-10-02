@@ -18,9 +18,9 @@ public class State {
 		board = new char[height][width];
 		reset();
 	}
-	
-	// Constructor to copy board, used when immediately assigning a new move
-	public State (State state) {
+
+	// Constructor to copy board
+	public State(State state) {
 		board = new char[height][width];
 		reset();
 		for (int i = 0; i < height; i++) {
@@ -32,6 +32,10 @@ public class State {
 	
 	public int getHVal() {
 		return hVal;
+	}
+	
+	public char[][] getBoard() {
+		return board;
 	}
 	
 	public void setHVal(int hval) {
@@ -133,6 +137,35 @@ public class State {
 			k = -1;
 		}
 		return (k*3*threeForX) - (k*3*threeForO) + (k*twoForX) - (k*twoForO);
+	}
+	
+	// Terminal check: if a future state has 4 in a row.
+	// Call this and then set the heuristic accordingly (max/min infinity to end/block)
+	// Returns 1 if victory for player, -1 if defeat for player
+	public int terminalCheck(char player) {
+		char opponent;
+		if (player == 'X') opponent = 'O';
+		else opponent = 'X';
+		
+		// Returns 1 if terminal victory | -1 if terminal defeat
+		int tCheck = 0;
+		
+		ArrayList<OpenRow> openRows = getOpenrows();
+		for (OpenRow or : openRows) {
+			if (or.getPlayer() == player) {
+				if (or.getType() == 4) {
+					tCheck++;
+					return tCheck;
+				}
+			}
+			if (or.getPlayer() == opponent) {
+				if (or.getType() == 4) {
+					tCheck--;
+					return tCheck;
+				}
+			}
+		}
+		return tCheck;
 	}
 	
 	public ArrayList<OpenRow> getOpenrows() {

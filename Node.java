@@ -11,7 +11,7 @@ public class Node {
 	}
 	
 	public Node (State state) {
-		this.state = state;
+		this.state = new State(state);
 	}
 	
 	public Node() {

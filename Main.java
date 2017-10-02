@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -78,91 +80,119 @@ public class Main {
 		}
 	}
 	
-	
-	private static int[] minimax(State s, int depth, char player) {
-		char opponent = (player == 'X' ? 'O' : 'X');
-		char current = (player == 'X' ? 'X' : 'O');
-		int bestVal = 0;
-		ArrayList<int[]> possibleMoves = s.getBlanks();
-		if(possibleMoves.isEmpty() || depth == 0) {
-			bestVal = s.getHeuristic(current);
-		}
-		
-		// Max of the result of doing minimize on resultant state of performing action on given state
-		ArrayList<State> newPositions = new ArrayList<>();
-		for (int i = 0; i < possibleMoves.size(); i++) {
-			State newstate = new State(s);
-			newstate.newMove(player, possibleMoves.get(i)[0], possibleMoves.get(i)[1]);				
-			newPositions.add(newstate);
-		}
-		// Have all new states to explore
-		HashMap<int[], Integer> map = new HashMap<>();
-		ArrayList<Integer> highValues = new ArrayList<>();
-		int maxVal = Integer.MIN_VALUE;
-		
-		for (int i = 0; i < newPositions.size(); i++) {
-			int temp = minimize(newPositions.get(i), depth-1, opponent);
-			if (temp >= maxVal) {
-				if (temp > maxVal)  {
-					highValues.clear();
-					map.clear();
+	// - ASSUMES THAT X IS MAXIMIZING - 
+	// play(advanced, x);
+	// I emailed TA/Professor and they said that utility is prioritized over heuristic, 
+	// i.e. behave in the same manner as beginner when open-3-in-a-row
+	private static int[] mDecision(Node node, int depth) {
+		// return the a in Actions(state) maximizing Min-Value(Result(a,state))
+		//HashMap<Node, Integer> lookup = new HashMap<>();
+		int best = Integer.MIN_VALUE;
+		int[] move = {0,0};
+		int temp = best;
+		ArrayList<Node> successors = expand(node, 'X');
+		for (Node successor : successors) {
+			best = Math.max(best, mMin(successor, depth-1));
+			if (temp < best) {
+				move = successor.getState().getLastMove();
+				//successor.getState().print();
+			}
+			//lookup.put(successor, best);
+			temp = best;
+			// No matter what side the open 4-in-a-row is on, take it
+			ArrayList<OpenRow> openRows = successor.getState().getOpenrows();
+			for (OpenRow or: openRows) {
+				if (or.getType() == 3) {
+					return or.getBlankPosition();
 				}
-				map.put(possibleMoves.get(i), temp);
-				maxVal = temp;
-				highValues.add(temp);
+			}
+		}
+		return move;
+	}
+	
+	// Maximizing is X
+	// Returns the integer value of the max heuristic child
+	private static int mMax(Node node, int depth) {
+		int check = terminalTest(node, depth, 1);
+		if (check == 0) return node.getState().getHVal();
+		if (depth == 0) return node.getState().getHeuristic('X');
+		int val = Integer.MIN_VALUE;
+		
+		// For each successor compute max
+		ArrayList<Node> successors = expand(node, 'X');
+		for (Node successor : successors) {
+			val = Math.max(val, mMin(successor, depth-1));
+		}
+		return val;
+	}
+	
+	// Minimizing is O
+	// Returns the integer alue of the min heuristic child
+	private static int mMin(Node node, int depth) {
+		int check = terminalTest(node, depth, 2);
+		if (check == 0) return node.getState().getHVal();
+		if (depth == 0) return node.getState().getHeuristic('O');
+		int val = Integer.MAX_VALUE;
+		
+		// For each successor compute min
+		ArrayList<Node> successors = expand(node, 'O');
+		for (Node successor : successors) {
+			val = Math.min(val, mMax(successor, depth-1));
+		}
+		return val;
+	}
+	
+	// Returns 0 if node is terminal, 1 if node is not
+	// Mode = 1 if called from mMax, 2 if called from mMin
+	// I might work on this some more
+	private static int terminalTest(Node node, int depth, int mode) {
+		int check = 1;
+		if (node.getState().terminalCheck('X') == 1) {
+			// -Victory incoming for X-
+			check = 0;
+			if (mode == 2) {
+				// Called from mMin - play from 'O', so assign a LOW heuristic value
+				node.getState().setHVal(Integer.MIN_VALUE);
+			}
+			if (mode == 1) {
+				node.getState().setHVal(Integer.MAX_VALUE);
+			}
+		} else if (node.getState().terminalCheck('O') == 1) {
+			// -Victory incoming for O-
+			check = 0;
+			if (mode == 2) {
+				node.getState().setHVal(Integer.MIN_VALUE);
+			}
+			if (mode == 1) {
+				node.getState().setHVal(Integer.MAX_VALUE);
 			}
 		}
 		
-		// Now have an ArrayList of best heuristics to choose
-		// Now have HashMap of moves made -> tied largest values
-		// Select randomly from largest values the key we need
-		
-		ArrayList<int[]> keyArray = new ArrayList<>(map.keySet());
-		Random r = new Random();
-		return keyArray.get(r.nextInt(keyArray.size()));
-	}
-	
-	private static int maximize(State s, int depth, char player) {
-		char opponent = (player == 'X' ? 'O' : 'X');
-		int bestVal = Integer.MIN_VALUE;
-		ArrayList<State> moves = expand(s, player);
-		if(moves.isEmpty() || depth == 0) {
-			bestVal = s.getHeuristic(player);
-			return bestVal;
-		}
-		for (State move : moves) {
-			bestVal = Math.max(bestVal, minimize(s, depth-1, opponent));
-		}
-		return bestVal;
-	}
-	
-	private static int minimize(State s, int depth, char player) {
-		char opponent = (player == 'X' ? 'O' : 'X');
-		int bestVal = Integer.MAX_VALUE;
-		ArrayList<State> moves = expand(s, player);
-		if(moves.isEmpty() || depth == 0) {
-			bestVal = s.getHeuristic(opponent);
-			return bestVal;
-		}
-		for (State move : moves) {
-			bestVal = Math.min(bestVal, maximize(s, depth-1, opponent));
-		}
-		return bestVal;
+		return check;
 	}
 	
 	// Returns a set of successors
-	public static ArrayList<State> expand(State state, char player) {
-		ArrayList<State> successors = new ArrayList<>();
-		ArrayList<int[]> blanks = state.getBlanks();
+	public static ArrayList<Node> expand(Node node, char player) {
+		ArrayList<Node> successors = new ArrayList<>();
+		ArrayList<int[]> blanks = node.getState().getBlanks();
 		for (int i = 0; i < blanks.size(); i++) {
 			int[] coordinates = blanks.get(i);
-			State newState = new State(state);							// Create a new state from the current one
-			newState.newMove(player, coordinates[0], coordinates[1]);	// Assign a new move
-			successors.add(newState);									// Add to list
+			Node newnode = new Node(node.getState());
+			Node successor = getSuccessor(newnode, coordinates, player);
+			successors.add(successor);
+			//successor.getState().print();
 		}
 		return successors;												// Return populated list
 	}
 
+	// Function that gets a successor node
+	private static Node getSuccessor(Node node, int[] location, char player) {
+		State newState = new State(node.getState());
+		Node successor = new Node(newState, node);
+		newState.newMove(player, location[0], location[1]);
+		return successor;
+	}
+	
 	private static void move(int player, int playerNumber, State s) {
 		char playerChar = (playerNumber == 1 ? 'X':'O');
 		switch (player) {
@@ -179,10 +209,12 @@ public class Main {
 				s.print();
 				break;
 			case ADVANCED:
-				int[] move = minimax(s, 2, playerChar);
+				Node current = new Node(s);
+				int[] move = mDecision(current, 2);
 				System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: ADVANCED");
 				s.newMove(playerChar, move[0], move[1]);
 				s.print();
+				// Drawing in one turn
 				break;
 			case MASTER:
 				
