@@ -1,7 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -39,7 +36,7 @@ public class Main {
 		*/
 		//Begginer vs. Human
 		//play(BEGINNER, HUMAN);
-		play(ADVANCED, BEGINNER);
+		play(ADVANCED, HUMAN);
 		
 	}
 
@@ -80,19 +77,19 @@ public class Main {
 		}
 	}
 	
-	// - ASSUMES THAT X IS MAXIMIZING - 
 	// play(advanced, x);
 	// I emailed TA/Professor and they said that utility is prioritized over heuristic, 
 	// i.e. behave in the same manner as beginner when open-3-in-a-row
-	private static int[] mDecision(Node node, int depth) {
+	private static int[] mDecision(Node node, int depth, char player) {
 		// return the a in Actions(state) maximizing Min-Value(Result(a,state))
+		char opponent = (player == 'X' ? 'O' : 'X');
 		int best = Integer.MIN_VALUE;
 		ArrayList<int[]> moves = new ArrayList<>();
 		int[] move = {0,0};
 		int temp = best;
-		ArrayList<Node> successors = expand(node, 'X');
+		ArrayList<Node> successors = expand(node, player);
 		for (Node successor : successors) {
-			best = Math.max(best, mMin(successor, depth-1));
+			best = Math.max(best, mMin(successor, depth-1, player));
 			if (temp <= best) {
 				if (temp < best) {
 					moves.clear();
@@ -102,24 +99,22 @@ public class Main {
 			}
 			temp = best;
 			
-			// 
+			OpenRow openThreeRow = getOpenThreeRow(player, successor.getState());
+			if (openThreeRow != null) {
+				return openThreeRow.getBlankPosition();
+			}
+			
 			ArrayList<OpenRow> openRows = successor.getState().getOpenrows();
 			for (OpenRow or: openRows) {
-				if (or.getType() == 3) {
-					return or.getBlankPosition();
-				}
-				// If the successor node has a 4 in a row, return the move that makes it 4 in a row
-				
-				
-				
-				// This check should be included in terminal test
+				// This check should be included in terminal test,
+				// but it functions correctly here
 				if (or.getType() == 4) return successor.getState().getLastMove();
 			}
 			
 		}
 		
-		// Check if there is an open 4-in-a-row for O
-		ArrayList<Node> oList = expand(node, 'O');
+		// Check if there is a preventable 4-in-a-row for opponent
+		ArrayList<Node> oList = expand(node, opponent);
 		for (Node oNode : oList) {
 			ArrayList<OpenRow> oRows = oNode.getState().getOpenrows();
 			for (OpenRow or : oRows) {
@@ -132,37 +127,39 @@ public class Main {
 	
 	// Maximizing is X
 	// Returns the integer value of the max heuristic child
-	private static int mMax(Node node, int depth) {
+	private static int mMax(Node node, int depth, char player) {
+		char opponent = (player == 'X' ? 'O' : 'X');
 		int check = terminalTest(node, depth, 1);
 		if (check == 0) {
 			return node.getU();	// Get utility value: prioritized over heuristic
 		}
 		
-		if (depth == 0) return node.getState().getHeuristic('X');
+		if (depth == 0) return node.getState().getHeuristic(player);
 		int val = Integer.MIN_VALUE;
 		
 		// For each successor compute max
 		ArrayList<Node> successors = expand(node, 'X');
 		for (Node successor : successors) {
-			val = Math.max(val, mMin(successor, depth-1));
+			val = Math.max(val, mMin(successor, depth-1, opponent));
 		}
 		return val;
 	}
 	
 	// Minimizing is O
 	// Returns the integer value of the min heuristic child
-	private static int mMin(Node node, int depth) {
+	private static int mMin(Node node, int depth, char player) {
+		char opponent = (player == 'X' ? 'O' : 'X');
 		int check = terminalTest(node, depth, 2);
 		if (check == 0) {
 			return node.getU();	// U is the utility value: prioritized over heuristic
 		}
-		if (depth == 0) return node.getState().getHeuristic('O');
+		if (depth == 0) return node.getState().getHeuristic(opponent);
 		int val = Integer.MAX_VALUE;
 		
 		// For each successor compute min
 		ArrayList<Node> successors = expand(node, 'O');
 		for (Node successor : successors) {
-			val = Math.min(val, mMax(successor, depth-1));
+			val = Math.min(val, mMax(successor, depth-1, player));
 		}
 		return val;
 	}
@@ -177,7 +174,6 @@ public class Main {
 			check = 0;
 			if (mode == 2) {
 				// Called from mMin - play from 'O', so assign a LOW heuristic value
-				//node.getState().setHVal(Integer.MIN_VALUE);
 				System.out.println("terminal test for X passed from min");
 				node.setU(Integer.MIN_VALUE);
 			}
@@ -213,7 +209,7 @@ public class Main {
 			successors.add(successor);
 			//successor.getState().print();
 		}
-		return successors;												// Return populated list
+		return successors;												
 	}
 
 	// Function that gets a successor node
@@ -241,7 +237,7 @@ public class Main {
 				break;
 			case ADVANCED:
 				Node current = new Node(s);
-				int[] move = mDecision(current, 2);
+				int[] move = mDecision(current, 2, playerChar);
 				System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: ADVANCED");
 				s.newMove(playerChar, move[0], move[1]);
 				s.print();
