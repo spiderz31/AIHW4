@@ -3,6 +3,7 @@ import java.util.Random;
 
 public class State {
 
+	private int[] lastMove = {0, 0};
 	private char[][] board;
 	private static final int width = 6;
 	private static final int height = 5;
@@ -11,9 +12,31 @@ public class State {
 	private static final int SAME = 1;
 	private static final int DIFFERENT = 2;
 	
+	private int hVal;
+	
 	public State() {
 		board = new char[height][width];
 		reset();
+	}
+
+	// Constructor to copy board
+	public State(State state) {
+		board = new char[height][width];
+		reset();
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				this.board[i][j] = state.board[i][j];
+			}
+		}
+	}
+	
+
+	public int getHVal() {
+		return hVal;
+	}
+	
+	public void setHVal(int hval) {
+		this.hVal = hval;
 	}
 	
 	public static int getWidth() {
@@ -26,6 +49,14 @@ public class State {
 
 	public State(char[][] board) {
 		this.board = board;
+	}
+	
+	public int[] getLastMove() {
+		return lastMove;
+	}
+	
+	public void setLastMove(int[] move) {
+		this.lastMove = move;
 	}
 	
 	public void reset() {
@@ -93,6 +124,7 @@ public class State {
 			}
 		}
 		
+		
 		/*
 		System.out.println("threeForX " + threeForX);
 		System.out.println("twoForX " + twoForX);
@@ -105,6 +137,32 @@ public class State {
 			k = -1;
 		}
 		return (k*3*threeForX) - (k*3*threeForO) + (k*twoForX) - (k*twoForO);
+	}
+	
+	public int terminalCheck(char player) {
+		char opponent;
+		if (player == 'X') opponent = 'O';
+		else opponent = 'X';
+		
+		// Returns 1 if terminal victory | -1 if terminal defeat
+		int tCheck = 0;
+		
+		ArrayList<OpenRow> openRows = getOpenrows();
+		for (OpenRow or : openRows) {
+			if (or.getPlayer() == player) {
+				if (or.getType() == 4) {
+					tCheck++;
+					return tCheck;
+				}
+			}
+			if (or.getPlayer() == opponent) {
+				if (or.getType() == 4) {
+					tCheck--;
+					return tCheck;
+				}
+			}
+		}
+		return tCheck;
 	}
 	
 	public ArrayList<OpenRow> getOpenrows() {

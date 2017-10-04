@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Scanner;
 
 /*
  * AI Homework #4
@@ -11,13 +8,6 @@ import java.util.Scanner;
  */
 
 public class Main {
-	
-	private static Scanner scanner = new Scanner(System.in);
-	
-	private static final int HUMAN = 0;
-	private static final int BEGINNER = 1;
-	private static final int ADVANCED = 2;
-	private static final int MASTER = 3;
 	
 	public static void main(String[] args) {
 		/*State s = new State();
@@ -35,13 +25,15 @@ public class Main {
 		System.out.println(s.getHeuristic('X'));
 		*/
 		//Begginer vs. Human
-		play(BEGINNER, HUMAN);
+		Game game = new Game();
+		game.Start();
+		//play(BEGINNER, HUMAN);
 	}
 
 	/*
 	 * player 1 is always 'X'
 	 */
-	private static void play(int player1, int player2) {
+	/*private static void play(int player1, int player2) {
 		State s = new State();
 		char winnerChar = ' ';
 		while (winnerChar == ' ') {
@@ -146,7 +138,7 @@ public class Main {
 		ArrayList<int[]> blanks = s.getBlanks();
 		return blanks.get(rand.nextInt(blanks.size()));
 	}
-
+*/
 	/*Needs
 	 * Classes
 	 * Node class
