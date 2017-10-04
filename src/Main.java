@@ -25,9 +25,11 @@ public class Main {
 		System.out.println(s.getHeuristic('X'));
 		*/
 		//Begginer vs. Human
+
 		Game game = new Game();
 		game.Start();
 		//play(BEGINNER, HUMAN);
+
 	}
 
 	/*
@@ -128,11 +130,9 @@ public class Main {
 	}
 
 	private static int[] getBeginnerMove(char playerChar, State s) {
-		ArrayList<OpenRow> openRows = s.getOpenrows();
-		for (OpenRow or: openRows) {
-			if (or.getType() == 3) {
-				return or.getBlankPosition();
-			}
+		OpenRow openThreeRow = getOpenThreeRow(playerChar, s);
+		if (openThreeRow != null) {
+			return openThreeRow.getBlankPosition();
 		}
 		Random rand = new Random();
 		ArrayList<int[]> blanks = s.getBlanks();
