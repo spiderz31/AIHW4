@@ -15,60 +15,80 @@ public class Game {
 	private int mWins = 0;
 	private int aWins = 0;
 	private int bWins = 0;
+	private int draw = 0;
 	
+	private final static boolean tournamentMode = false;
+	private int nodesGenerated = 0;
+	private long startTime;
+	private long executionTime = 0;
 	
 	public void Start() {
-		//play(BEGINNER , MASTER);
-		//play(ADVANCED , BEGINNER);
-		//play(MASTER , ADVANCED);
-		tournament();
+		//tournament();
+		play(ADVANCED , MASTER);
 	}
 	
 	
 	private void tournament() {
-		this.mWins = 0;
-		this.aWins = 0;
-		this.bWins = 0;
+		resetWins();
 		
+		System.out.println("BEGINNER VS MASTER");
 		for(int i = 0; i < 50; i++) {
 			play(BEGINNER , MASTER);
 		}
+		System.out.println("Beginner won: " + this.bWins);
+		System.out.println("Draws: " + this.draw);
+		
+		resetWins();
+		System.out.println("MASTER VS BEGINNER");
 		for(int i = 0; i < 50; i++) {
 			play(MASTER , BEGINNER);
 		}
-		
-		System.out.println("Beginner won: " + this.bWins);
 		System.out.println("Master won : " + this.mWins);
+		System.out.println("Draws: " + this.draw);
+		
 		resetWins();
-	
+		System.out.println("BEGINNER VS ADVANCED");
 		for(int i = 0; i < 50; i++) {
 			play(BEGINNER , ADVANCED);
 		}
-		for(int i = 0; i < 50; i++) {
-			play(ADVANCED, BEGINNER);
-		}
-		
 		System.out.println("Beginner won: " + this.bWins);
-		System.out.println("Advanced won : " + this.mWins);
-		resetWins();
+		System.out.println("Draws: " + this.draw);
 		
+		resetWins();
+		System.out.println("ADVANCED VS BEGINNER");
+		for(int i = 0; i < 50; i++) {
+			play(ADVANCED , BEGINNER);
+		}
+		System.out.println("Advanced won: " + this.aWins);
+		System.out.println("Draws: " + this.draw);
+		
+		resetWins();
+		System.out.println("ADVANCED VS MASTER");
 		for(int i = 0; i < 50; i++) {
 			play(ADVANCED , MASTER);
 		}
+		System.out.println("Advanced won: " + this.aWins);
+		System.out.println("Draws: " + this.draw);
+		
+		resetWins();
+		System.out.println("MASTER VS ADVANCED");
 		for(int i = 0; i < 50; i++) {
 			play(MASTER , ADVANCED);
 		}
-		
-		System.out.println("Advanced won: " + this.bWins);
 		System.out.println("Master won : " + this.mWins);
+		System.out.println("Draws: " + this.draw);
+		
 		resetWins();
 	}
+	
+
 	
 	
 	private void resetWins() {
 		this.mWins = 0;
 		this.aWins = 0;
 		this.bWins = 0;
+		this.draw = 0;
 	}
 	
 	//Player always plays with X
@@ -76,65 +96,94 @@ public class Game {
 		State s = new State();
 		char winnerChar = ' ';
 		while (winnerChar == ' ') {
+			startTime = System.currentTimeMillis();
 			move(player1, 1,  s);
+			executionTime = System.currentTimeMillis() - startTime;
+			if(!tournamentMode) {
+				showGeneratedNodes();
+				showCPUTime();
+			}
 			winnerChar = s.getWinner();
 			if (winnerChar == ' ') {
+				startTime = System.currentTimeMillis();
 				move(player2, 2, s);
+				executionTime = System.currentTimeMillis() - startTime;
+				if(!tournamentMode) {
+					showGeneratedNodes();
+					showCPUTime();
+				}
 				winnerChar = s.getWinner();
 			}
 		}
 		if (winnerChar == 'D') {
 			System.out.println("DRAW");
+			draw++;
 		}
 		else {
 			int winnerPlayer = winnerChar == 'X' ? player1 : player2;
 			switch (winnerPlayer) {
 				case HUMAN:
-					System.out.println("GAME OVER, WINNER: HUMAN");
+					if(!tournamentMode) System.out.println("GAME OVER, WINNER: HUMAN");
 					break;
 				case BEGINNER:
-					System.out.println("GAME OVER, WINNER: BEGINNER");
+					if(!tournamentMode) System.out.println("GAME OVER, WINNER: BEGINNER");
 					this.bWins++;
 					break;
 				case ADVANCED:
-					System.out.println("GAME OVER, WINNER: ADVANCED");
+					if(!tournamentMode) System.out.println("GAME OVER, WINNER: ADVANCED");
 					this.aWins++;
 					break;
 				case MASTER:
-					System.out.println("GAME OVER, WINNER: MASTER");
+					if(!tournamentMode) System.out.println("GAME OVER, WINNER: MASTER");
 					this.mWins++;
 					break;
 			}
 		}
 	}
 	
+	private void showCPUTime() {
+		System.out.println("CPU execution time: " + executionTime);
+	}
+
+
+	private void showGeneratedNodes() {
+		System.out.println("Nodes generated: " + nodesGenerated);
+		nodesGenerated = 0;
+	}
+
+
 	private void move(int player, int playerNumber, State s) {
 		char playerChar = (playerNumber == 1 ? 'X':'O');
 		switch (player) {
 			case HUMAN:
-				System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: HUMAN");
+				if(!tournamentMode) System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: HUMAN");
 				int[] humanMove = getHumanMove(playerChar, s);
 				s.newMove(playerChar, humanMove[0], humanMove[1]);
-				s.print();
+				
 				break;
 			case BEGINNER:
-				System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: BEGINNER");
+				if(!tournamentMode) System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: BEGINNER");
 				int[] beginnerMove = getBeginnerMove(playerChar, s);
 				s.newMove(playerChar, beginnerMove[0], beginnerMove[1]);
-				s.print();
+				
 				break;
 			case ADVANCED:
-				
+				Node current = new Node(s);
+				int[] move = Decision(current, playerChar, 2);
+				if(!tournamentMode) System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: ADVANCED");
+				s.newMove(playerChar, move[0], move[1]);
+				// Drawing in one turn
 				break;
 			case MASTER:
 				Node gameState = new Node(s);
-				System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: MASTER");
+				if(!tournamentMode) System.out.println("PLAYER " + playerNumber + " (" + playerChar + ") TURN: MASTER");
 				int[] masterMove = GetMasterMove(gameState , playerChar);
 				s.newMove(playerChar, masterMove[0], masterMove[1]);
-				s.print();
+				
 				break;
 				
 		}
+		if(!tournamentMode) s.print();
 	}
 
 	private int[] getHumanMove(char playerChar, State s) {
@@ -173,12 +222,10 @@ public class Game {
 		return userInput;
 	}
 
-	private int[] getBeginnerMove(char playerChar, State s) {
-		ArrayList<OpenRow> openRows = s.getOpenrows();
-		for (OpenRow or: openRows) {
-			if (or.getType() == 3) {
-				return or.getBlankPosition();
-			}
+	private static int[] getBeginnerMove(char playerChar, State s) {
+		OpenRow openThreeRow = getOpenThreeRow(playerChar, s);
+		if (openThreeRow != null) {
+			return openThreeRow.getBlankPosition();
 		}
 		Random rand = new Random();
 		ArrayList<int[]> blanks = s.getBlanks();
@@ -198,33 +245,45 @@ public class Game {
 		int best = Integer.MIN_VALUE;
 		int [] move = {0,0};
 		int temp = best;
+		ArrayList<int[]> moves = new ArrayList<>();
 		ArrayList<Node> successors = expand(gameState, player);
 
 		for(Node successor : successors) {
-			
 			best = Math.max(best, Min(successor, depth-1 , player));
-			if (temp < best) {
-				move = successor.getState().getLastMove();
-				//successor.getState().print();]
-			}
-			//lookup.put(successor, best);
-			temp = best;
-			// No matter what side the open 4-in-a-row is on, take it
-			ArrayList<OpenRow> openRows = successor.getState().getOpenrows();
-			for (OpenRow or: openRows) {
-				if (or.getType() == 3) {
-					return or.getBlankPosition();
+			if (temp <= best) {
+				if (temp < best) {
+					moves.clear();
 				}
+				move = successor.getState().getLastMove();
+				moves.add(move);
+				/*System.out.println("+++");
+				successor.getState().print();
+				System.out.println("===");
+				System.out.println("heuristic: " + successor.getState().getHeuristic(player));
+				System.out.println("+++");*/
 			}
+			temp = best;
+
+			OpenRow openThreeRow = getOpenThreeRow(player, successor.getState());
+			if (openThreeRow != null) {
+				return openThreeRow.getBlankPosition();
+			}
+			
+			ArrayList<OpenRow> openRows = successor.getState().getOpenrows();
+			for (OpenRow or : openRows) {
+				if (or.getType() == 4) return successor.getState().getLastMove();
+			}
+			
 		}
-		
-		return move;
+		//scanner.nextLine();
+		Random r = new Random();
+		return moves.get(r.nextInt(moves.size()));
 	}
 	
 	
 	//need max
 	private int Max(Node node, int depth , char player) {
-		
+		//System.out.println("Max depth: " + player + " " + depth);
 		int test = terminalTest(node , depth , 1 , player);
 		if(test == 0) return node.getState().getHVal();
 		if(depth == 0) return node.getState().getHeuristic(player);
@@ -244,7 +303,8 @@ public class Game {
 	//need min
 	
 	private int Min(Node node , int depth , char player) {
-		
+		//System.out.println("Min depth: " + player + " " + depth);
+	//	scanner.nextLine();
 		char opPlayer;
 		//we have to swap out the player variable so that we can minimize the opponent
 		if(player == 'X') opPlayer = 'O';
@@ -300,27 +360,26 @@ public class Game {
 		ArrayList<Node> successors = new ArrayList<Node>();
 		ArrayList<int[]> blanks = node.getState().getBlanks();
 		for(int[] blank : blanks) {
-			Node newnode = new Node(node.getState());
-			Node successor = getSuccessor(newnode, blank, player);
+			Node successor = getSuccessor(node.getState(), blank, player);
 			successors.add(successor);
-			//successor.getState().print();
+			nodesGenerated++;
 		}
 		
 		return successors;
 	}
 	
 	//get successors (if needed)
-	private Node getSuccessor(Node node , int[] coords , char player) {
+	private Node getSuccessor(State s , int[] coords , char player) {
 		
-		State newState = new State(node.getState());
-		Node successor = new Node(newState, node);
+		State newState = new State(s);
 		newState.newMove(player, coords[0], coords[1]);
+		Node successor = new Node(newState, null);
 		newState.setLastMove(coords);
 		return successor;
 		
 	}
 	
-	private OpenRow getOpenThreeRow(char playerChar, State s) {
+	private static OpenRow getOpenThreeRow(char playerChar, State s) {
 		ArrayList<OpenRow> openRows = s.getOpenrows();
 		OpenRow threeInARow = null;
 		OpenRow opponentThreeInARow = null;
@@ -341,6 +400,5 @@ public class Game {
 		}
 		return null;
 	}
-	
 	
 }

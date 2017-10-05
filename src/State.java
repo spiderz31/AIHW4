@@ -14,6 +14,8 @@ public class State {
 	
 	private int hVal;
 	
+	//private ArrayList<OpenRow> openRows;
+	
 	public State() {
 		board = new char[height][width];
 		reset();
@@ -28,6 +30,7 @@ public class State {
 				this.board[i][j] = state.board[i][j];
 			}
 		}
+		//openRows = getOpenrows();
 	}
 	
 
@@ -93,6 +96,9 @@ public class State {
 	
 	public void newMove(char playerChar, int i, int j) {
 		board[i][j] = playerChar;
+		this.lastMove[0] = i;
+		this.lastMove[1] = j;
+		//openRows = getOpenrows();
 	}
 	
 	public char get(int i, int j) {
@@ -104,7 +110,7 @@ public class State {
 		int twoForX = 0;
 		int threeForO = 0;
 		int twoForO = 0;
-		ArrayList<OpenRow> openRows = getOpenrows();
+		ArrayList<OpenRow> openRows = new ArrayList<>();
 		for (OpenRow or: openRows) {
 			if (or.getPlayer() == 'X') {
 				if (or.getType() == 2) {
@@ -166,6 +172,7 @@ public class State {
 	}
 	
 	public ArrayList<OpenRow> getOpenrows() {
+		//if (openRows != null) return openRows;
 		ArrayList<OpenRow> openRows = new ArrayList<>();
 		OpenRow newOpenRow;
 		for (int i = 0; i < height; i++) {
