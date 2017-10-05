@@ -23,8 +23,8 @@ public class Game {
 	private long executionTime = 0;
 	
 	public void Start() {
-		//tournament();
-		play(ADVANCED , MASTER);
+		tournament();
+		//play(ADVANCED , MASTER);
 	}
 	
 	
