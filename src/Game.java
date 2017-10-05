@@ -1,3 +1,10 @@
+/*
+ * AI Homework #4
+ * Pedro Carrion Castagnola
+ * Trevor Levins
+ * Joshua Lewis
+ */
+
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -17,39 +24,36 @@ public class Game {
 	private int bWins = 0;
 	private int draw = 0;
 	
-	private final static boolean tournamentMode = false;
+	private boolean tournamentMode;
 	private int nodesGenerated = 0;
 	private long startTime;
 	private long executionTime = 0;
 	
 	public void Start() {
 		tournament();
+		
+		//uncomment following lines for single games
+		//play(BEGINNER , HUMAN);
+		//play(BEGINNER , ADVANCED);
 		//play(ADVANCED , MASTER);
 	}
 	
 	
 	private void tournament() {
-		resetWins();
-		
-		System.out.println("BEGINNER VS MASTER");
-		for(int i = 0; i < 50; i++) {
-			play(BEGINNER , MASTER);
-		}
-		System.out.println("Beginner won: " + this.bWins);
-		System.out.println("Draws: " + this.draw);
-		
-		resetWins();
-		System.out.println("MASTER VS BEGINNER");
-		for(int i = 0; i < 50; i++) {
-			play(MASTER , BEGINNER);
-		}
-		System.out.println("Master won : " + this.mWins);
-		System.out.println("Draws: " + this.draw);
+		tournamentMode = true;
 		
 		resetWins();
 		System.out.println("BEGINNER VS ADVANCED");
 		for(int i = 0; i < 50; i++) {
 			play(BEGINNER , ADVANCED);
+		}
+		System.out.println("Beginner won: " + this.bWins);
+		System.out.println("Draws: " + this.draw);
+		
+		resetWins();
+		System.out.println("BEGINNER VS MASTER");
+		for(int i = 0; i < 50; i++) {
+			play(BEGINNER , MASTER);
 		}
 		System.out.println("Beginner won: " + this.bWins);
 		System.out.println("Draws: " + this.draw);
@@ -71,6 +75,14 @@ public class Game {
 		System.out.println("Draws: " + this.draw);
 		
 		resetWins();
+		System.out.println("MASTER VS BEGINNER");
+		for(int i = 0; i < 50; i++) {
+			play(MASTER , BEGINNER);
+		}
+		System.out.println("Master won : " + this.mWins);
+		System.out.println("Draws: " + this.draw);
+		
+		resetWins();
 		System.out.println("MASTER VS ADVANCED");
 		for(int i = 0; i < 50; i++) {
 			play(MASTER , ADVANCED);
@@ -79,10 +91,8 @@ public class Game {
 		System.out.println("Draws: " + this.draw);
 		
 		resetWins();
+		tournamentMode = false;
 	}
-	
-
-	
 	
 	private void resetWins() {
 		this.mWins = 0;
@@ -91,7 +101,10 @@ public class Game {
 		this.draw = 0;
 	}
 	
-	//Player always plays with X
+	/* For each player: perform move, if exists a winner game is over, 
+	 * else keep playing
+	 * Player 1 always plays with X
+	 */
 	private void play(int player1, int player2) {
 		State s = new State();
 		char winnerChar = ' ';
@@ -152,6 +165,9 @@ public class Game {
 	}
 
 
+	/*
+	 * get the move according to the 'player' type
+	 */
 	private void move(int player, int playerNumber, State s) {
 		char playerChar = (playerNumber == 1 ? 'X':'O');
 		switch (player) {
@@ -186,6 +202,9 @@ public class Game {
 		if(!tournamentMode) s.print();
 	}
 
+	/*
+	 * Ask human for input
+	 */
 	private int[] getHumanMove(char playerChar, State s) {
 		boolean blankSelected = false;
 		int row = 0;
@@ -203,6 +222,9 @@ public class Game {
 		return new int[] {row, column};
 	}
 	
+	/*
+	 * Validate input
+	 */
 	private int getHumanInput(String type, State s) {
 		int maxInput = type.equals("ROW") ? State.getHeight() : State.getWidth();
 		int userInput = -1;
@@ -222,6 +244,15 @@ public class Game {
 		return userInput;
 	}
 
+	/*
+	 * get open 3 in a row from the state.
+	 * 'openThreeRow' will contain the blank position
+	 * of an open 3 in a row of the player 'PlayerChar'. If it does
+	 * not exist, it will contain the blank position
+	 * of an open 3 in a row of the opponent of player 'PlayerChar'.
+	 * If it does not exist it will contain null and 
+	 * this function will return a radom value
+	 */
 	private static int[] getBeginnerMove(char playerChar, State s) {
 		OpenRow openThreeRow = getOpenThreeRow(playerChar, s);
 		if (openThreeRow != null) {
@@ -231,13 +262,12 @@ public class Game {
 		ArrayList<int[]> blanks = s.getBlanks();
 		return blanks.get(rand.nextInt(blanks.size()));
 	}
+	
 	//A method that returns the move of the master AI
 	//The master AI uses a 4-ply minimax tree to help it decide what move to make next
 	//This should help ensure that it beats the other two AI quite frequently
 	private int[] GetMasterMove(Node gameState , char player) {
-		
 		return Decision(gameState , player , 4);
-		
 	}
 	
 	private int[] Decision(Node gameState , char player , int depth) {
@@ -256,11 +286,6 @@ public class Game {
 				}
 				move = successor.getState().getLastMove();
 				moves.add(move);
-				/*System.out.println("+++");
-				successor.getState().print();
-				System.out.println("===");
-				System.out.println("heuristic: " + successor.getState().getHeuristic(player));
-				System.out.println("+++");*/
 			}
 			temp = best;
 
@@ -283,7 +308,6 @@ public class Game {
 	
 	//need max
 	private int Max(Node node, int depth , char player) {
-		//System.out.println("Max depth: " + player + " " + depth);
 		int test = terminalTest(node , depth , 1 , player);
 		if(test == 0) return node.getState().getHVal();
 		if(depth == 0) return node.getState().getHeuristic(player);
@@ -301,10 +325,7 @@ public class Game {
 	
 	
 	//need min
-	
 	private int Min(Node node , int depth , char player) {
-		//System.out.println("Min depth: " + player + " " + depth);
-	//	scanner.nextLine();
 		char opPlayer;
 		//we have to swap out the player variable so that we can minimize the opponent
 		if(player == 'X') opPlayer = 'O';
@@ -379,6 +400,7 @@ public class Game {
 		
 	}
 	
+	//Return 3 in a row from current player, else return 3 in a row from opponent player, else return null
 	private static OpenRow getOpenThreeRow(char playerChar, State s) {
 		ArrayList<OpenRow> openRows = s.getOpenrows();
 		OpenRow threeInARow = null;

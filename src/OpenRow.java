@@ -1,3 +1,9 @@
+/*
+ * AI Homework #4
+ * Pedro Carrion Castagnola
+ * Trevor Levins
+ * Joshua Lewis
+ */
 
 public class OpenRow {
 	private char player;

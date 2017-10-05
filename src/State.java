@@ -1,6 +1,17 @@
+/*
+ * AI Homework #4
+ * Pedro Carrion Castagnola
+ * Trevor Levins
+ * Joshua Lewis
+ */
+
 import java.util.ArrayList;
 import java.util.Random;
 
+/*
+ * This class represents a State
+ * board: double array with the value of each element: 'X', 'O' or ' '
+ */
 public class State {
 
 	private int[] lastMove = {0, 0};
@@ -13,8 +24,6 @@ public class State {
 	private static final int DIFFERENT = 2;
 	
 	private int hVal;
-	
-	//private ArrayList<OpenRow> openRows;
 	
 	public State() {
 		board = new char[height][width];
@@ -30,7 +39,6 @@ public class State {
 				this.board[i][j] = state.board[i][j];
 			}
 		}
-		//openRows = getOpenrows();
 	}
 	
 
@@ -98,13 +106,20 @@ public class State {
 		board[i][j] = playerChar;
 		this.lastMove[0] = i;
 		this.lastMove[1] = j;
-		//openRows = getOpenrows();
 	}
 	
 	public char get(int i, int j) {
 		return board[i][j];
 	}
 	
+	/*
+	 * The function “getHeuristic(char player)” of the class “State” 
+	 * uses the function “getOpenrows()”. Then, for all the open rows, 
+	 * it calculates the amount of ‘X’ 3 in a row, ‘X’ 2 in a row, 
+	 * ‘O’ 3 in a row and ‘O’ 2 in a row. 
+	 * Finally, it returns the heuristic value according to the given 
+	 * formula and the current player (input ‘player’ variable)’.
+	 */
 	public int getHeuristic(char player) {
 		int threeForX = 0;
 		int twoForX = 0;
@@ -171,8 +186,16 @@ public class State {
 		return tCheck;
 	}
 	
+	/*
+	 * The function public “getOpenrows()” of the class “State” returns 
+	 * an Array List of “OpenRow” objects. This function loops through 
+	 * all elements of the double array which represent the tic-tac-toe board. 
+	 * For each of these elements, a pattern is compared with the horizontal, 
+	 * vertical, diagonal left and diagonal right neighbours. 
+	 * If a pattern of a 2 open row or 3 in a row is found, a new OpenRow object 
+	 * is added to the this array.
+	 */
 	public ArrayList<OpenRow> getOpenrows() {
-		//if (openRows != null) return openRows;
 		ArrayList<OpenRow> openRows = new ArrayList<>();
 		OpenRow newOpenRow;
 		for (int i = 0; i < height; i++) {

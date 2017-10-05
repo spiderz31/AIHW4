@@ -1,3 +1,14 @@
+/*
+ * AI Homework #4
+ * Pedro Carrion Castagnola
+ * Trevor Levins
+ * Joshua Lewis
+ */
+
+/*
+ * This class represents a Node
+ * state: indicates the position of each character in the board
+ */
 public class Node {
 	
 	private State state;
